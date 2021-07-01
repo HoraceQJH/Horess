@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Horess Alpha 1.0.1</title>
+  <link rel="stylesheet" href="bootstrap.min.css">
+  <style>
+    .highlight {
+      color: red;
+    }
+
+    table,
+    table tr th,
+    table tr td {
+      border: 1px solid rgb(185, 185, 185);
+    }
+
+    table tr th,
+    table tr td {
+      width: 50px;
+      background-size: contain !important;
+    }
+
+    table tr {
+      height: 50px;
+    }
+
+    table {
+      text-align: center;
+      border-collapse: collapse;
+      padding: 2px;
+      border-radius: 5px;
+    }
+
+    .hide {
+      background: #eaeaea;
+      cursor: pointer;
+    }
+
+    .go-empty {
+      z-index: 1000;
+      border: 3px solid rgb(6, 248, 127);
+      background: rgba(6, 248, 127, 0.2);
+      width: 50px;
+      height: 50px;
+      position: absolute;
+      cursor: pointer;
+    }
+
+    .go-kill {
+      z-index: 1000;
+      border: 3px solid rgb(248, 75, 6);
+      background: rgba(248, 75, 6, 0.2);
+      width: 50px;
+      height: 50px;
+      position: absolute;
+      cursor: pointer;
+    }
+
+    .go-prop {
+      z-index: 1000;
+      border: 3px solid rgb(248, 184, 6);
+      background: rgba(248, 184, 6, 0.2);
+      width: 50px;
+      height: 50px;
+      position: absolute;
+      cursor: pointer;
+    }
+
+    .piece {
+      line-height: 50px;
+      text-align: center;
+      border: 1px solid rgb(185, 185, 185);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      position: absolute;
+      color: white;
+    }
+
+    .teami {
+      background: red;
+    }
+
+    .teamii {
+      background: blue;
+    }
+
+    .instr {
+      background: grey;
+      position: unset;
+      display: inline-block;
+      margin-right: 0.5em;
+    }
+
+    #control {
+      position: absolute;
+      left: 8px;
+      top: 59px;
+      padding: 20px 20px 10px 20px;
+      display: none;
+      z-index: 990;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      border-radius: 3px;
+      box-shadow: 0 6px 12px rgb(0 0 0 / 18%);
+    }
+
+    .button {
+      border-radius: 50%;
+      display: inline-block;
+      margin: 0 4px;
+      padding: 12px;
+      overflow: hidden;
+      vertical-align: middle;
+      cursor: pointer;
+      height: 48px;
+      width: 48px;
+      white-space: nowrap;
+      font: 13px/27px Roboto, RobotoDraft, Arial, sans-serif;
+      z-index: 986;
+    }
+
+    .button:hover {
+      background: #eaeaea;
+    }
+
+    .button img {
+      vertical-align: unset;
+    }
+
+    .little-square {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      margin-left: 2px;
+      margin-top: 2px;
+    }
+
+    .modal h5 {
+      margin-top: 0.5em;
+    }
+  </style>
+  <script src="jquery-3.3.1.min.js"></script>
+  <script src="bootstrap.bundle.min.js"></script>
+  <script src="chess.js"></script>
+</head>
+
+<body>
+  <div style="display:inline-block">
+    <table>
+      <tbody id="board"></tbody>
+    </table>
+    <div style="font-size:200%;width:100%;text-align:center;">
+      <span id="red-score" style="color:red">0</span> :
+      <span id="blue-score" style="color:blue">0</span>
+    </div>
+  </div>
+
+  <div class="card" id="control">
+    <b id="control-name"></b>
+    <div id="blood"></div> 
+    <img src="img/attack.png" style="width:25px;vertical-align:middle;">
+    = <span id="attack"></span>
+    <br />
+    <img src="img/speed.png" style="width:25px;vertical-align:middle;">
+    = <span id="speed"></span>
+    <br />
+    <div id="effect" style="margin-top:5px;"></div>
+  </div>
+
+  <div class="button" onclick="giveUp()" style="position: absolute; bottom: 5px; left: 8px;">
+    <img src="img/flag_black_24dp.png">
+  </div>
+  <div class="button" onclick="cAlert($('#help').html())" style="position: absolute; bottom: 5px; left: 56px;">
+    <img src="img/help_black_24dp.png">
+  </div>
+  <div class="button" onclick="cAlert($('#log').html())" style="position: absolute; bottom: 5px; left: 104px;">
+    <img src="img/warning_black_24dp.png">
+  </div>
+  <div class="button" style="position: absolute; bottom: 5px; right: 8px; cursor: auto;">
+    <div style="background: red;" class="little-square" id="player"></div>
+  </div>
+
+  <div id="go"></div>
+
+  <div style="position:absolute;top:0px;left:600px;">
+    <div class="piece instr">炮*2</div>生命值=2, 攻击力=4
+  </div>
+  <div style="position:absolute;top:50px;left:600px;">
+    <div class="piece instr">马*2</div>生命值=3, 攻击力=2
+  </div>
+  <div style="position:absolute;top:100px;left:600px;">
+    <div class="piece instr">球*2</div>生命值=4, 攻击力=1
+  </div>
+  <div style="position:absolute;top:150px;left:600px;">
+    <div class="piece instr">猴*2</div>生命值=1, 攻击力=3
+  </div>
+
+  <div id="help" style="display:none;">
+    <div style="text-align: left;">
+      <h5>目标</h5>
+      <b>游戏的目标是击杀所有敌方棋子。</b> 但是，它和chess有一点本质的不同。<br>
+      四个中间的方块是道具生产者。每5个回合都会产生新的道具。<br>
+      <h5>不同的道具</h5>
+      吃到相应的道具后，棋子会获得一定的效果。<br>
+      <img src="img/diamond.png" style="width: 25px">
+      （宝石）= 速度+1<br>
+      <img src="img/banana.png" style="width: 25px">
+      （香蕉）= 生命值+1 & 攻击力+1 （喂给猴改为 +2/+2）<br>
+      <img src="img/magic.png" style="width: 25px">
+      （异变）= 变形为另一个棋子，攻击力和生命值改为该棋子的原始值<br>
+      <img src="img/random.png" style="width: 25px">
+      （随机）= 随机一个道具效果<br>
+      击杀别的棋子不会获得其持有的道具效果。<br>
+      <h5>棋子与移动规则</h5>
+      <ul>
+        <li>炮: 与象棋中的炮相同，但不能开车</li>
+        <li>马: 与中国象棋中的马相同</li>
+        <li>球: 可以跳过一个相邻的棋子</li>
+        <li>猴: 速度 = 2</li>
+        <li>没有棋子可以进入道具生产者，但你可以穿过它。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="log" style="display:none;">
+    <div style="text-align: left;">
+      <h5>更新日志</h5>
+      <b>version: Alpha 1.0.1</b> <br>
+      <b>date:2021.7.1</b> <br>
+      <ul>
+        <li>完成所有功能，修复（应该是所有）bug。</li>
+      </ul><br>
+      <b>version: Alpha 1.0.0</b> <br>
+      <b>date:2021.6.14</b> <br>
+      <ul>
+        <li>创造了这个游戏。</li>
+      </ul><br>
+    </div>
+  </div>
+
+</body>
+
+</html>
