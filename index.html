@@ -4,7 +4,7 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>Horess Alpha 1.0.1</title>
+  <title>Horess Alpha 1.0.1.1</title>
   <link rel="stylesheet" href="bootstrap.min.css">
   <style>
     .highlight {
@@ -145,15 +145,6 @@
   <script src="jquery-3.3.1.min.js"></script>
   <script src="bootstrap.bundle.min.js"></script>
   <script src="horess.js"></script>
-  <script>
-    var _hmt = _hmt || [];
-    (function() {
-      var hm = document.createElement("script");
-      hm.src = "https://hm.baidu.com/hm.js?d20dc18f1a5ccd24e3751cbf41b36da5";
-      var s = document.getElementsByTagName("script")[0]; 
-      s.parentNode.insertBefore(hm, s);
-    })();
-</script>
 </head>
 
 <body>
@@ -161,10 +152,6 @@
     <table>
       <tbody id="board"></tbody>
     </table>
-    <div style="font-size:200%;width:100%;text-align:center;">
-      <span id="red-score" style="color:red">0</span> :
-      <span id="blue-score" style="color:blue">0</span>
-    </div>
   </div>
 
   <div class="card" id="control">
@@ -201,7 +188,7 @@
     <div class="piece instr">马*2</div>生命值=3, 攻击力=2
   </div>
   <div style="position:absolute;top:100px;left:600px;">
-    <div class="piece instr">球*2</div>生命值=4, 攻击力=1
+    <div class="piece instr">球*2</div>生命值=6, 攻击力=1
   </div>
   <div style="position:absolute;top:150px;left:600px;">
     <div class="piece instr">猴*2</div>生命值=1, 攻击力=3
@@ -215,7 +202,7 @@
       <h5>不同的道具</h5>
       吃到相应的道具后，棋子会获得一定的效果。<br>
       <img src="img/diamond.png" style="width: 25px">
-      （宝石）= 速度+1<br>
+      （宝石）= 速度+1 but 攻击力-1<br>
       <img src="img/banana.png" style="width: 25px">
       （香蕉）= 生命值+1 & 攻击力+1 （喂给猴改为 +2/+2）<br>
       <img src="img/magic.png" style="width: 25px">
@@ -237,10 +224,20 @@
   <div id="log" style="display:none;">
     <div style="text-align: left;">
       <h5>更新日志</h5>
+      <b>version: Alpha 1.0.1.1</b> <br>
+      <b>date:2021.7.2</b> <br>
+      <ul>
+        <li>修复了球运用技能是可以选择跳入道具生产者的bug。</li>
+        <li>修复了球在速度大时技能寻路会重叠的bug。</li>
+        <li>修复了炮的技能的一些bug。</li>
+        <li>削弱宝石：并减少1点攻击力。</li>
+        <li>增强球：生命值改为6点。</li>
+        <li>删除了没用的计分器。</li>
+      </ul><br>
       <b>version: Alpha 1.0.1</b> <br>
       <b>date:2021.7.1</b> <br>
       <ul>
-        <li>完成所有功能，修复（应该是所有）bug。</li>
+        <li>完成所有功能，修复一些bug。</li>
       </ul><br>
       <b>version: Alpha 1.0.0</b> <br>
       <b>date:2021.6.14</b> <br>
