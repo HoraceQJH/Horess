@@ -93,7 +93,7 @@ var board = [[-1, -1, -1, -1, -1, -1, -1, -1], [-1, -1, -1, -1, -1, -1, -1, -1],
 // board format: [team, level, effect(array), blood, speed, attack, reallevel]
 var isDead = [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]];
 var nam = ["炮", "炮", "马", "马", "球", "球", "猴", "猴"]; //每个棋子的名称
-var blood = [2, 2, 3, 3, 4, 4, 1, 1]; //每个棋子的初始血量
+var blood = [2, 2, 3, 3, 6, 6, 1, 1]; //每个棋子的初始血量
 var attack = [4, 4, 2, 2, 1, 1, 3, 3]; //每个棋子的初始攻击力
 var initPos = [[0, 1], [0, 6], [0, 2], [0, 5], [0, 3], [0, 4], [0, 0], [0, 7]]; //每个旗子所对应的初始坐标
 var player = 0;
@@ -220,6 +220,8 @@ function control(x, y)
             {
               if(flag == 0)
                 flag = 1;
+              else if(flag == 1 && board[tx][ty][0] == board[x][y][0])
+                break;
               else if(flag == 1 && board[tx][ty][0] != board[x][y][0])
               {
                 res.push([tx, ty]);
@@ -263,7 +265,9 @@ function control(x, y)
               var flag = 0;
               while(inBoard(px, py))
               {
-                if(board[px][py] == -1)
+                if(inProducer(px, py))
+                  break;
+                if(board[px][py] == -1 && !isvisited[px][py])
                 {
                   res.push([px, py]);
                   isvisited[px][py] = 1;
@@ -272,7 +276,7 @@ function control(x, y)
                   qstep.enqueue(ss + 1);
                   break;
                 }
-                else if(board[px][py][0] != player)
+                else if(board[px][py][0] != player && !isvisited[px][py])
                 {
                   res.push([px, py]);
                   isvisited[px][py] = 1;
@@ -437,6 +441,9 @@ function go(x, y, nx, ny)
     {
         case 0: //宝石
             board[x][y][4] += 1;
+            board[x][y][5] -= 1;
+            if(board[x][y][5] <= 0)
+              board[x][y][5] = 1;
             break;
         case 1: //香蕉
           if(board[x][y][1] == 6 || board[x][y][1] == 7) //是否棋子为“猴”
