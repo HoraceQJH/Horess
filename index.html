@@ -4,7 +4,7 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>Horess Alpha 1.0.1.1</title>
+  <title>Horess Alpha 1.0.2</title>
   <link rel="stylesheet" href="bootstrap.min.css">
   <style>
     .highlight {
@@ -167,13 +167,9 @@ var _hmt = _hmt || [];
   <div class="card" id="control">
     <b id="control-name"></b>
     <div id="blood"></div> 
-    <img src="img/attack.png" style="width:25px;vertical-align:middle;">
-    = <span id="attack"></span>
-    <br />
-    <img src="img/speed.png" style="width:25px;vertical-align:middle;">
-    = <span id="speed"></span>
-    <br />
-    <div id="effect" style="margin-top:5px;"></div>
+    <div id="shield"></div>
+    <div id="attack"></div>
+    <div id="speed"></div>
   </div>
 
   <div class="button" onclick="giveUp()" style="position: absolute; bottom: 5px; left: 8px;">
@@ -211,14 +207,16 @@ var _hmt = _hmt || [];
       四个中间的方块是道具生产者。每5个回合都会产生新的道具。<br>
       <h5>不同的道具</h5>
       吃到相应的道具后，棋子会获得一定的效果。<br>
+      <img src="img/random.png" style="width: 25px">
+      （随机）= 随机一个道具效果<br>
       <img src="img/diamond.png" style="width: 25px">
-      （宝石）= 速度+1 but 攻击力-1<br>
+      （宝石）= 速度+1 but 攻击力-1（不能少于1点）<br>
       <img src="img/banana.png" style="width: 25px">
       （香蕉）= 生命值+1 & 攻击力+1 （喂给猴改为 +2/+2）<br>
       <img src="img/magic.png" style="width: 25px">
       （异变）= 变形为另一个棋子，攻击力和生命值改为该棋子的原始值<br>
-      <img src="img/random.png" style="width: 25px">
-      （随机）= 随机一个道具效果<br>
+      <img src="img/shield.png" style="width: 25px">
+      （圣盾）= 免疫下一次受到的伤害<br>
       击杀别的棋子不会获得其持有的道具效果。<br>
       <h5>棋子与移动规则</h5>
       <ul>
@@ -234,13 +232,26 @@ var _hmt = _hmt || [];
   <div id="log" style="display:none;">
     <div style="text-align: left;">
       <h5>更新日志</h5>
+      <b>version: Alpha 1.0.2</b> <br>
+      <b>date:2021.7.26</b> <br>
+      <ul>
+        <li>更换了部分图标，使新手能熟练理解。</li>
+        <li>新道具：圣盾，免疫下一次受到的伤害。</li>
+      </ul><br>
+      <b>version: Alpha 1.0.1.2</b> <br>
+      <b>date:2021.7.3</b> <br>
+      <ul>
+        <li>更改了游戏说明与更新说明中对于宝石效果的错误描述。</li>
+        <li>删除了一处关于球的错误代码。</li>
+        <li>修改代码，添加注释，便与于以后阅读与修改。</li>
+      </ul><br>
       <b>version: Alpha 1.0.1.1</b> <br>
       <b>date:2021.7.2</b> <br>
       <ul>
         <li>修复了球运用技能是可以选择跳入道具生产者的bug。</li>
         <li>修复了球在速度大时技能寻路会重叠的bug。</li>
         <li>修复了炮的技能的一些bug。</li>
-        <li>削弱宝石：并减少1点攻击力。</li>
+        <li>削弱宝石：并减少1点攻击力（不会少于1点攻击力）。</li>
         <li>增强球：生命值改为6点。</li>
         <li>删除了没用的计分器。</li>
       </ul><br>
