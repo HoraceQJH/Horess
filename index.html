@@ -4,7 +4,7 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>Horess Alpha 1.0.2</title>
+  <title>Horess Alpha 1.0.3</title>
   <link rel="stylesheet" href="bootstrap.min.css">
   <style>
     .highlight {
@@ -69,6 +69,16 @@
       cursor: pointer;
     }
 
+    .go-york {
+      z-index: 1000;
+      border: 3px solid rgb(16, 111, 214);
+      background: rgba(248, 111, 6, 0.2);
+      width: 50px;
+      height: 50px;
+      position: absolute;
+      cursor: pointer;
+    }
+
     .piece {
       line-height: 50px;
       text-align: center;
@@ -76,6 +86,17 @@
       border-radius: 50%;
       width: 50px;
       height: 50px;
+      position: absolute;
+      color: white;
+    }
+
+    .secretPiece {
+      line-height: 26px;
+      text-align: center;
+      border: 1px solid rgb(185, 185, 185);
+      border-radius: 50%;
+      width: 26px;
+      height: 26px;
       position: absolute;
       color: white;
     }
@@ -90,6 +111,13 @@
 
     .instr {
       background: grey;
+      position: unset;
+      display: inline-block;
+      margin-right: 0.5em;
+    }
+
+    .secretInstr {
+      background: rgb(255, 215, 0);
       position: unset;
       display: inline-block;
       margin-right: 0.5em;
@@ -144,17 +172,8 @@
   </style>
   <script src="jquery-3.3.1.min.js"></script>
   <script src="bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
   <script src="horess.js"></script>
-  <script>
-var _hmt = _hmt || [];
-(function() {
-  var hm = document.createElement("script");
-  hm.src = "https://hm.baidu.com/hm.js?d20dc18f1a5ccd24e3751cbf41b36da5";
-  var s = document.getElementsByTagName("script")[0]; 
-  s.parentNode.insertBefore(hm, s);
-})();
-</script>
-
 </head>
 
 <body>
@@ -188,17 +207,22 @@ var _hmt = _hmt || [];
   <div id="go"></div>
 
   <div style="position:absolute;top:0px;left:600px;">
-    <div class="piece instr">炮*2</div>生命值=2, 攻击力=4
+    <div class="piece instr">炮*2</div> 攻击力=4，生命值=2
   </div>
   <div style="position:absolute;top:50px;left:600px;">
-    <div class="piece instr">马*2</div>生命值=3, 攻击力=2
+    <div class="piece instr">马*2</div> 攻击力=2，生命值=3
   </div>
   <div style="position:absolute;top:100px;left:600px;">
-    <div class="piece instr">球*2</div>生命值=6, 攻击力=1
+    <div class="piece instr">球*2</div> 攻击力=1，生命值=5
   </div>
   <div style="position:absolute;top:150px;left:600px;">
-    <div class="piece instr">猴*2</div>生命值=1, 攻击力=3
+    <div class="piece instr">猴*2</div> 攻击力=3，生命值=1
   </div>
+  <div style="position:absolute;top:200px;left:600px;">
+    <div class="piece instr" style="color:greenyellow">姚*?</div> 攻击力=3，生命值=3
+  </div>
+
+  <div id="secret" style="position:absolute;top:0px;left:1240px;"></div>
 
   <div id="help" style="display:none;">
     <div style="text-align: left;">
@@ -214,17 +238,32 @@ var _hmt = _hmt || [];
       <img src="img/banana.png" style="width: 25px">
       （香蕉）= 生命值+1 & 攻击力+1 （喂给猴改为 +2/+2）<br>
       <img src="img/magic.png" style="width: 25px">
-      （异变）= 变形为另一个棋子，攻击力和生命值改为该棋子的原始值<br>
+      （异变）= 变形为另一个棋子，攻击力和生命值改为该棋子的原始值（有彩蛋）<br>
       <img src="img/shield.png" style="width: 25px">
       （圣盾）= 免疫下一次受到的伤害<br>
+      <img src="img/bone.png" style="width: 25px">
+      （骨头）= 攻击力+3<br>
       击杀别的棋子不会获得其持有的道具效果。<br>
-      <h5>棋子与移动规则</h5>
+      <h5>初始棋子</h5>
       <ul>
         <li>炮: 与象棋中的炮相同，但不能开车</li>
         <li>马: 与中国象棋中的马相同</li>
-        <li>球: 可以跳过一个相邻的棋子</li>
+        <li>球: 开局自带圣盾</li>
         <li>猴: 速度 = 2</li>
         <li>没有棋子可以进入道具生产者，但你可以穿过它。</li>
+      </ul>
+      <h5>衍生棋子</h5>
+      <ul>
+        <li>姚:斜着走，每当其移动，释放一个奥秘（最多同时控制5个奥秘）</li>
+        <li>(奥秘)公正审判：当一个棋子攻击时，将其攻击力和生命值变为1</li>
+        <li>(奥秘)清算：当一个棋子造成3点或以上伤害后，将其消灭</li>
+        <li>(奥秘)复仇：当一个棋子被击杀后，随机使另一个同方棋子获得+3/+2</li>
+        <li>(奥秘)蕉猾诡计：下个被获得的道具将变为香蕉</li>
+        <li>(奥秘)偷天换日：当一个随从被攻击时，将其异变</li>
+        <li>(奥秘)抄袭：当一个道具被获得后，是另一方的一个随机棋子也获得此道具</li>
+        <li>(奥秘)冰冻陷阱：当一个随从攻击时，阻止这次攻击</li>
+        <li>(奥秘)爆炸陷阱：当一个随从攻击时，对所有同方其他棋子造成1点伤害</li>
+        <li>奥秘对双方都起效果，但在触发前不可见</li>
       </ul>
     </div>
   </div>
@@ -232,6 +271,19 @@ var _hmt = _hmt || [];
   <div id="log" style="display:none;">
     <div style="text-align: left;">
       <h5>更新日志</h5>
+      <b>version: Alpha 1.0.3</b> <br>
+      <b>date:2021.7.26</b> <br>
+      <ul>
+        <li style="color:red">已知bug：有多个奥秘一次触发是只会弹出一个提示框（不影响实际游戏）</li>
+        <li>添加了许多的奥秘（详细请见帮助）</li>
+        <li>在使用异变后，有小概率（1/7）变为姚（详细请见帮助）</li>
+        <li>修复了在使用异变后，可能会变成原来的棋子的bug</li>
+        <li>修复了随机道具只会生成前两种道具的bug</li>
+        <li>新道具：骨头，使棋子获得+3攻击力</li>
+        <li>调整了球的技能。</li>
+        <li>调整了球的生命值：6 -> 5。</li>
+        <li>调整了一些游戏描述与帮助。</li>
+      </ul><br>
       <b>version: Alpha 1.0.2</b> <br>
       <b>date:2021.7.26</b> <br>
       <ul>
