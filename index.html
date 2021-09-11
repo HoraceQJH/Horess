@@ -4,7 +4,7 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>Horess Alpha 1.0.3</title>
+  <title>Horess Alpha 1.1.0</title>
   <link rel="stylesheet" href="bootstrap.min.css">
   <style>
     .highlight {
@@ -123,7 +123,26 @@
       margin-right: 0.5em;
     }
 
+    .modelInstr {
+      background: rgb(0, 255, 0);
+      position: unset;
+      display: inline-block;
+      margin-right: 0.5em;
+    }
+
     #control {
+      position: absolute;
+      left: 8px;
+      top: 59px;
+      padding: 20px 20px 10px 20px;
+      display: none;
+      z-index: 990;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      border-radius: 3px;
+      box-shadow: 0 6px 12px rgb(0 0 0 / 18%);
+    }
+
+    #choose-piece {
       position: absolute;
       left: 8px;
       top: 59px;
@@ -169,6 +188,10 @@
     .modal h5 {
       margin-top: 0.5em;
     }
+
+    .unchoosed {
+      background-color: grey;
+    }
   </style>
   <script src="jquery-3.3.1.min.js"></script>
   <script src="bootstrap.bundle.min.js"></script>
@@ -191,6 +214,9 @@
     <div id="speed"></div>
   </div>
 
+  <div class="card" id="choose-piece">
+  </div>
+
   <div class="button" onclick="giveUp()" style="position: absolute; bottom: 5px; left: 8px;">
     <img src="img/flag_black_24dp.png">
   </div>
@@ -205,6 +231,15 @@
   </div>
 
   <div id="go"></div>
+
+  <div style="position:absolute;top:0px;left:450px">
+    <b id="money1" style="color:blue;"></b>
+  </div> 
+  <div style="position:absolute;top:40px;left:450px">
+    <b id="money0" style="color:red;"></b>
+  </div>
+
+  <button id="startGame" style="position:absolute;top:420px;left:160px" onclick="startGame()">开始游戏</button>
 
   <div style="position:absolute;top:0px;left:600px;">
     <div class="piece instr">炮*2</div> 攻击力=4，生命值=2
@@ -229,6 +264,7 @@
       <h5>目标</h5>
       <b>游戏的目标是击杀所有敌方棋子。</b> 但是，它和chess有一点本质的不同。<br>
       四个中间的方块是道具生产者。每5个回合都会产生新的道具。<br>
+      <b>开局时你可以排兵布阵，但棋子总费用不能超过25费。</b>
       <h5>不同的道具</h5>
       吃到相应的道具后，棋子会获得一定的效果。<br>
       <img src="img/random.png" style="width: 25px">
@@ -238,23 +274,23 @@
       <img src="img/banana.png" style="width: 25px">
       （香蕉）= 生命值+1 & 攻击力+1 （喂给猴改为 +2/+2）<br>
       <img src="img/magic.png" style="width: 25px">
-      （异变）= 变形为另一个棋子，攻击力和生命值改为该棋子的原始值（有彩蛋）<br>
+      （异变）= 变形为另一个棋子，攻击力和生命值改为该棋子的原始值<br>
       <img src="img/shield.png" style="width: 25px">
       （圣盾）= 免疫下一次受到的伤害<br>
       <img src="img/bone.png" style="width: 25px">
       （骨头）= 攻击力+3<br>
       击杀别的棋子不会获得其持有的道具效果。<br>
-      <h5>初始棋子</h5>
+      <h5>基础棋子</h5>
       <ul>
-        <li>炮: 与象棋中的炮相同，但不能开车</li>
-        <li>马: 与中国象棋中的马相同</li>
-        <li>球: 开局自带圣盾</li>
-        <li>猴: 速度 = 2</li>
+        <li>炮(2): 与象棋中的炮相同，但不能开车</li>
+        <li>马(4): 与中国象棋中的马相同</li>
+        <li>球(3): 开局自带圣盾</li>
+        <li>猴(3): 速度 = 2</li>
         <li>没有棋子可以进入道具生产者，但你可以穿过它。</li>
       </ul>
-      <h5>衍生棋子</h5>
+      <h5>进阶棋子</h5>
       <ul>
-        <li>姚:斜着走，每当其移动，释放一个奥秘（最多同时控制5个奥秘）</li>
+        <li>姚(6):斜着走，每当其移动，释放一个奥秘（最多同时控制5个奥秘）</li>
         <li>(奥秘)公正审判：当一个棋子攻击时，将其攻击力和生命值变为1</li>
         <li>(奥秘)清算：当一个棋子造成3点或以上伤害后，将其消灭</li>
         <li>(奥秘)复仇：当一个棋子被击杀后，随机使另一个同方棋子获得+3/+2</li>
@@ -267,14 +303,29 @@
       </ul>
     </div>
   </div>
-
   <div id="log" style="display:none;">
     <div style="text-align: left;">
-      <h5>更新日志</h5>
-      <b>version: Alpha 1.0.3</b> <br>
-      <b>date:2021.7.26</b> <br>
+      <b>version: Alpha 1.1.0</b> <br>
+      <b>date:2021.9.11</b> <br>
       <ul>
-        <li style="color:red">已知bug：有多个奥秘一次触发是只会弹出一个提示框（不影响实际游戏）</li>
+        <li>为游戏增加了排兵布阵玩法（具体见帮助）。</li>
+        <li>为游戏增加了防沉迷系统/xyx。</li>
+      </ul><br>
+      <b>version: Alpha 1.0.3.2</b> <br>
+      <b>date:2021.8.9</b> <br>
+      <ul>
+        <li>修改部分代码逻辑。</li>
+      </ul><br>
+      <b>version: Alpha 1.0.3.1</b> <br>
+      <b>date:2021.8.7</b> <br>
+      <ul>
+        <li>为姚的移动增加新的特效</li>
+        <li>从一定的角度上解决了上次产生的bug</li>
+      </ul><br>
+      <b>version: Alpha 1.0.3</b> <br>
+      <b>date:2021.8.6</b> <br>
+      <ul>
+        <li style="color:blue">已知bug（已部分解决）：有多个奥秘一次触发是只会弹出一个提示框（不影响实际游戏）</li>
         <li>添加了许多的奥秘（详细请见帮助）</li>
         <li>在使用异变后，有小概率（1/7）变为姚（详细请见帮助）</li>
         <li>修复了在使用异变后，可能会变成原来的棋子的bug</li>
