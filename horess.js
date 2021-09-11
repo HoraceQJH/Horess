@@ -1,5 +1,4 @@
 //Based on ybj's code and cyb's code
-
 class Queue //来自度娘的一个queue模板
 {
     constructor()
@@ -81,10 +80,9 @@ function pos(x, y) //返回board[x][y]的页面中的坐标
 {
   return `top: ${Number(x) * 50}px; left: ${Number(y) * 50}px;`;
 }
-
 //测试用变量，请注意
 var allYork = 0; // 若值为1，则异变只会产生姚
-
+var backdoor = 0;
 //游戏运行的全局变量
 var board = [[-1, -1, -1, -1, -1, -1, -1, -1], [-1, -1, -1, -1, -1, -1, -1, -1],
 [-1, -1, -1, -1, -1, -1, -1, -1], [-1, -1, -1, -1, -1, -1, -1, -1],
@@ -100,6 +98,7 @@ var initPos = [[0, 1], [0, 6], [0, 2], [0, 5], [0, 3], [0, 4], [0, 0], [0, 7], /
 var player = 0; //目前操作的玩家：0红 1蓝
 var going = 0; //用来判断在不在control状态下的变量
 var turn = 0; //已经走过的回合数
+var gameStarted = 0;
 var numProp = [ [0, 0], [0, 0], [0, 0], [0, 0] ]; 
 // 分别代表（3，3）（3，4）（4，3）（4，4）内的道具（个数，种类）
 // 种类：0 宝石 1 香蕉 2 异变 3 随机
@@ -112,8 +111,20 @@ var secretText =
   , "(奥秘)抄袭：当一个道具被获得后，使另一方的一个随机棋子也获得此道具"
   , "(奥秘)冰冻陷阱：当一个随从攻击时，阻止这次攻击"
   , "(奥秘)爆炸陷阱：当一个随从攻击时，对所有同方其他棋子造成1点伤害"];
+var modelPieceId = [[0, 2, 4, 6, 8], [0, 2, 4, 6, 8]];
 var nowSecret = [0, 0, 0, 0, 0, 0, 0, 0];
 var numSecret = 0;
+var money = [25, 25];
+var costMoney = [2, 2, 4, 4, 3, 3, 3, 3, 6];
+
+
+function jason()
+{
+  var easterEgg = "Jason jason a jason!";
+  return easterEgg;
+}
+
+
 
 function inProducer(x, y) //在道具生产者之内
 {
@@ -131,36 +142,115 @@ function findPiece(x, y) //通过(x, y)找到html中id：piece${}
 {
   return board[x][y][0] * 16 + board[x][y][6];
 }
+function findBlockId(x, y)
+{
+  return `blk${x}${y}`;
+}
+function findTeam(x, y)
+{
+  return ((x == 0 || x == 1)? 1 : 0);
+}
 window.onload = function()
 {
   let ht = ""; 
   for (let i = 0; i < 8; i++) //加载8*8的棋盘
   { 
     ht += "<tr>";
-    for (let i = 0; i < 8; i++) 
-      ht += '<td></td>';
+    for (let j = 0; j < 8; j++)
+    {
+      if (i >= 2 && i <= 5)
+        ht += `<td id="${findBlockId(i, j)}"></td>`;
+      else
+        ht += `<td id="${findBlockId(i, j)}" class="unchoosed" onclick="setBlock(${i}, ${j})"></td>`;
+    }
     ht += "</tr>";
   }
   $("#board").html(ht);
-  for (let i = 0; i < 8; i++) //加载下面的8个棋子
-  {
-    let xI = 7 - initPos[i][0], yI = 7 - initPos[i][1];
-    let nameI = nam[i];
-    document.body.innerHTML += `<div class="piece teami" id="piece${i}" style
-      ="${pos(xI, yI)}" onclick="control(${xI}, ${yI})"><span>${nameI}</span></div>`;
-    let haveShield = (i == 4 || i == 5)? 1 : 0;
-    board[xI][yI] = [0, i, [haveShield], blood[i], speed[i], attack[i], i];
-  }
-  for (let i = 0; i < 8; i++) //加载上面的8个棋子
-  {
-    let xI = initPos[i][0], yI = initPos[i][1];
-    let nameI = nam[i];
-    document.body.innerHTML += `<div class="piece teamii" id="piece${String(Number(i) + 16)}" style
-      ="${pos(xI, yI)}" onclick="control(${xI}, ${yI})"><span>${nameI}</span></div>`;
-    let haveShield = (i == 4 || i == 5)? 1 : 0;
-    board[xI][yI] = [1, i, [haveShield], blood[i], speed[i], attack[i], i];
-  }
+
+  document.getElementById("money0").innerText = `${money[0]}`;
+  document.getElementById("money1").innerText = `${money[1]}`;
+
   updatePropProducer(); //更新道具生产者
+}
+function startGame()
+{
+  for(let i = 0; i < 8; i ++)
+  {
+    if(!(findTeam(i, 11) || i == 6 || i == 7))
+      continue;
+    for(let j = 0; j < 8; j ++)
+    {
+      $(`#${findBlockId(i, j)}`).removeClass("unchoosed");
+      document.getElementById(`${findBlockId(i, j)}`).onclick = function(){
+        jason()
+      }
+    }
+  }
+  document.getElementById("startGame").style.display = "none";
+  document.getElementById("money1").style.display = "none";
+  document.getElementById("money0").style.display = "none";
+
+  var today=new Date();
+  var weekday=today.getDay();
+  var sunday=new Date(1000*60*60*24*(7-weekday) + today.getTime());    
+  var friday=new Date(1000*60*60*24*(5-weekday) + today.getTime());
+  if ((friday <= today <= sunday && (new Date()).getHours() >= 20 && (new Date()).getHours() <= 21) || backdoor == 1)
+    gameStarted = 1;
+  else
+  {
+    cAlert("<b>根据国家最新对未成年人游戏管控的通知，您现在无法进行游戏。(周五、六、日20:00~21:00)</b>");
+    gameStarted = 0;
+  }
+}
+function selectPiece(x, y, id)
+{
+  $("#choose-piece").fadeToggle(function(){
+    if ((money[findTeam(x, y)] - costMoney[id]) < 0)
+      return;
+    else if (id == 1 || id == 3 || id == 5 || id == 7)
+      modelPieceId[findTeam(x, y)][(id - 1) / 2] = 114514;
+    else if (id == 8)
+      modelPieceId[findTeam(x, y)][4] = 114514;
+    else if (id == 114514)
+      return;
+    else 
+      modelPieceId[findTeam(x, y)][id / 2] ++;
+    
+    if(board[x][y] != -1)
+      return;
+      
+    if (findTeam(x, y))
+    {
+      document.body.innerHTML += `<div class="piece teamii" id="piece${String(id + 16)}" style
+      ="${pos(x, y)}" onclick="control(${x}, ${y})"><span>${nam[id]}</span></div>`;
+      let haveShield = (id == 4 || id == 5)? 1 : 0;
+      board[x][y] = [1, id, [haveShield], blood[id], speed[id], attack[id], id];
+      money[1] -= costMoney[id];
+    }
+    else
+    {
+      document.body.innerHTML += `<div class="piece teami" id="piece${String(id)}" style
+      ="${pos(x, y)}" onclick="control(${x}, ${y})"><span>${nam[id]}</span></div>`;
+      let haveShield = (id == 4 || id == 5)? 1 : 0;
+      board[x][y] = [0, id, [haveShield], blood[id], speed[id], attack[id], id];
+      money[0] -= costMoney[id];
+    }
+
+    document.getElementById("money0").innerText = `${money[0]}`;
+    document.getElementById("money1").innerText = `${money[1]}`;
+  });
+}
+function setBlock(x, y)
+{
+  $("#choose-piece").fadeToggle(function(){
+    $("#choose-piece").empty();
+    var ele = document.getElementById("choose-piece");
+    ele.innerHTML += `<div class="piece modelInstr" onclick="selectPiece(${x},${y},${modelPieceId[findTeam(x, y)][0]})">炮</div>`;
+    ele.innerHTML += `<div class="piece modelInstr" onclick="selectPiece(${x},${y},${modelPieceId[findTeam(x, y)][1]})">马</div>`;
+    ele.innerHTML += `<div class="piece modelInstr" onclick="selectPiece(${x},${y},${modelPieceId[findTeam(x, y)][2]})">球</div>`;
+    ele.innerHTML += `<div class="piece modelInstr" onclick="selectPiece(${x},${y},${modelPieceId[findTeam(x, y)][3]})">猴</div>`;
+    ele.innerHTML += `<div class="piece modelInstr" onclick="selectPiece(${x},${y},${modelPieceId[findTeam(x, y)][4]})">姚</div>`;
+  });
 }
 function showInformation(x, y)
 {
@@ -195,9 +285,19 @@ function control(x, y)
     if (inProducer(nx, ny) && numProp[findNumPropArray(nx, ny)][0] > 0) //分别显示道具、空格、攻击的格子颜色
       $("#go").append(`<div class="go-prop" onclick="go(${x},${y},${nx},${ny})"style="${pos(nx, ny)}"></div>`);
     else if (board[nx][ny] == -1)
-      $("#go").append(`<div class="go-empty" onclick="go(${x},${y},${nx},${ny})"style="${pos(nx, ny)}"></div>`);
+    {
+      if(board[x][y][1] == 8) //姚的移动颜色为蓝色
+        $("#go").append(`<div class="go-york" onclick="go(${x},${y},${nx},${ny})"style="${pos(nx, ny)}"></div>`);
+      else
+        $("#go").append(`<div class="go-empty" onclick="go(${x},${y},${nx},${ny})"style="${pos(nx, ny)}"></div>`);
+    }
     else if (board[nx][ny][0] != player)
-      $("#go").append(`<div class="go-kill" onclick="go(${x},${y},${nx},${ny})"style="${pos(nx, ny)}"></div>`);
+    {
+      if(board[x][y][1] == 8) //姚的移动颜色为蓝色
+        $("#go").append(`<div class="go-york" onclick="go(${x},${y},${nx},${ny})"style="${pos(nx, ny)}"></div>`);
+      else
+        $("#go").append(`<div class="go-kill" onclick="go(${x},${y},${nx},${ny})"style="${pos(nx, ny)}"></div>`);
+    }
   }
   function bfs(levelnum) //广度优先遍历可以走到的格子
   {
@@ -285,6 +385,8 @@ function control(x, y)
   $("#control").fadeToggle(function () 
   {
     showInformation(x, y);
+    if(gameStarted == 0)
+      return;
     let boardXY = board[x][y];
     if (player == boardXY[0] && going == 0) 
     {
@@ -314,9 +416,7 @@ function control(x, y)
       }
       // 生成可移动的位置
       for (var pos of res)
-      {
         controlHelper(x, y, pos[0], pos[1], player);
-      } 
     }
     if (going == 1)
     {
@@ -343,11 +443,12 @@ function search(target, ux, uy) //target 2全部 否则为 0红 1蓝
 }
 function showSecret(showingSecret)
 {
-  swal({
-    title: "Secret!",
-    text: secretText[showingSecret],
-    icon: "warning",
-  });
+  // swal({
+  //   title: "Secret!",
+  //   text: secretText[showingSecret],
+  //   icon: "warning",
+  // });
+  alert(secretText[showingSecret]);
 }
 function updateSecret()
 {
@@ -373,9 +474,7 @@ function updatePropProducer() //更新道具生产者
     {
       var ele = $("#board>tr").eq(i).children("td").eq(j);
       if (numProp[findNumPropArray(i, j)][0] == 0) //如果没有道具，生成灰幕
-      {
         ele.css("background", "#aaa");
-      }
       else if (numProp[findNumPropArray(i, j)][0] == 1) //如果有且仅有一个道具，随机生成
       {
         var randProp = Math.floor(Math.random() * 6); //随机道具生成（0~5）
@@ -497,7 +596,6 @@ function go(x, y, nx, ny) //从(x, y)移动到(nx, ny), 只关心结果
         break;
     }
   }
-
   function doWithProps(ifRand) //处理道具(会嵌套)
   {
     var sw = numProp[findNumPropArray(nx, ny)][1];
@@ -518,20 +616,15 @@ function go(x, y, nx, ny) //从(x, y)移动到(nx, ny), 只关心结果
       updateSecret();
     }
   }
-
   let bxy = board[x][y], nbxy = board[nx][ny];
   $("#go").empty();
   $("#control").fadeOut();
   going = 0;
-
   player = 1 - player;//改变当前玩家，在左下角显示
   if (player == 0) document.getElementById("player").style.background = "red";
   else document.getElementById("player").style.background = "blue";
-
   if (bxy[1] == 8) //移动的棋子是姚
     newSecret();
-
-
   if (nbxy == -1) // nbxy==-1 <=> 走入的格子为空
   { 
     if (inProducer(nx, ny)) // 走入道具生产者
@@ -572,7 +665,6 @@ function go(x, y, nx, ny) //从(x, y)移动到(nx, ny), 只关心结果
       updateSecret();
       return;
     }
-
     if (nowSecret[0] == 1) //(奥秘)公正审判：当一个棋子攻击时，将其攻击力和生命值变为1
     {
       showSecret(0);
@@ -582,11 +674,9 @@ function go(x, y, nx, ny) //从(x, y)移动到(nx, ny), 只关心结果
       numSecret -= 1;
       updateSecret();
     }
-
     if (nowSecret[4] == 1) //(奥秘)偷天换日：当一个随从被攻击时，将其异变
     {
       showSecret(4);
-
       //直接抄异变代码，(x, y)改成(nx, ny)
       var randlevel = Math.floor(Math.random() * 8);
       while(randlevel == board[nx][ny][1]) //防止取到相同的等级
@@ -602,7 +692,6 @@ function go(x, y, nx, ny) //从(x, y)移动到(nx, ny), 只关心结果
       board[nx][ny][3] = blood[randlevel]; //改血量
       board[nx][ny][4] = speed[randlevel]; //改速度
       board[nx][ny][5] = attack[randlevel]; //改攻击力
-
       nowSecret[4] = 0;
       numSecret -= 1;
       updateSecret();
@@ -683,7 +772,6 @@ function go(x, y, nx, ny) //从(x, y)移动到(nx, ny), 只关心结果
   findDead(0);
   findDead(1);
 }
-
 function giveUp()
 {
   if (player == 0)
