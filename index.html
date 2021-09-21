@@ -4,7 +4,7 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>Horess Alpha 1.1.0</title>
+  <title>Horess Alpha 1.1.1</title>
   <link rel="stylesheet" href="bootstrap.min.css">
   <style>
     .highlight {
@@ -245,16 +245,16 @@
     <div class="piece instr">炮*2</div> 攻击力=4，生命值=2
   </div>
   <div style="position:absolute;top:50px;left:600px;">
-    <div class="piece instr">马*2</div> 攻击力=2，生命值=3
+    <div class="piece instr">马*2</div> 攻击力=3，生命值=2
   </div>
   <div style="position:absolute;top:100px;left:600px;">
-    <div class="piece instr">球*2</div> 攻击力=1，生命值=5
+    <div class="piece instr">球*2</div> 攻击力=2，生命值=3
   </div>
   <div style="position:absolute;top:150px;left:600px;">
     <div class="piece instr">猴*2</div> 攻击力=3，生命值=1
   </div>
   <div style="position:absolute;top:200px;left:600px;">
-    <div class="piece instr" style="color:greenyellow">姚*?</div> 攻击力=3，生命值=3
+    <div class="piece instr" style="color:greenyellow">姚*1</div> 攻击力=3，生命值=3
   </div>
 
   <div id="secret" style="position:absolute;top:0px;left:1240px;"></div>
@@ -284,7 +284,7 @@
       <ul>
         <li>炮(2): 与象棋中的炮相同，但不能开车</li>
         <li>马(4): 与中国象棋中的马相同</li>
-        <li>球(3): 开局自带圣盾</li>
+        <li>球(3): 可以在每行每列中滚动，但只能到达最远的位置，且不能攻击</li>
         <li>猴(3): 速度 = 2</li>
         <li>没有棋子可以进入道具生产者，但你可以穿过它。</li>
       </ul>
@@ -297,7 +297,7 @@
         <li>(奥秘)蕉猾诡计：下个被获得的道具将变为香蕉</li>
         <li>(奥秘)偷天换日：当一个随从被攻击时，将其异变</li>
         <li>(奥秘)抄袭：当一个道具被获得后，是另一方的一个随机棋子也获得此道具</li>
-        <li>(奥秘)冰冻陷阱：当一个随从攻击时，阻止这次攻击</li>
+        <li>(奥秘)救赎：当一个随从死亡时，将其复活并保留1点生命值</li>
         <li>(奥秘)爆炸陷阱：当一个随从攻击时，对所有同方其他棋子造成1点伤害</li>
         <li>奥秘对双方都起效果，但在触发前不可见</li>
       </ul>
@@ -305,6 +305,17 @@
   </div>
   <div id="log" style="display:none;">
     <div style="text-align: left;">
+      <b>version: Alpha 1.1.1</b> <br>
+      <b>date:2021.9.19</b> <br>
+      <ul>
+        <li style="color: red;">已知bug：游戏无法判断结束，请玩家自行判断（可能在下个版本修复）</li>
+        <li>删除奥秘：冰冻陷阱。</li>
+        <li>增加奥秘：救赎。（具体见帮助）</li>
+        <li>删除了球所拥有的圣盾。</li>
+        <li>调整球的属性值：生命值 5 -> 3 攻击力 1 -> 2。</li>
+        <li>调整马的属性值：生命值 3 -> 2 攻击力 2 -> 3。</li>
+        <li>为球增加了新的技能。（具体见帮助）</li>
+      </ul><br>
       <b>version: Alpha 1.1.0</b> <br>
       <b>date:2021.9.11</b> <br>
       <ul>
@@ -319,18 +330,18 @@
       <b>version: Alpha 1.0.3.1</b> <br>
       <b>date:2021.8.7</b> <br>
       <ul>
-        <li>为姚的移动增加新的特效</li>
-        <li>从一定的角度上解决了上次产生的bug</li>
+        <li>为姚的移动增加新的特效。</li>
+        <li>从一定的角度上解决了上次产生的bug。</li>
       </ul><br>
       <b>version: Alpha 1.0.3</b> <br>
       <b>date:2021.8.6</b> <br>
       <ul>
-        <li style="color:blue">已知bug（已部分解决）：有多个奥秘一次触发是只会弹出一个提示框（不影响实际游戏）</li>
-        <li>添加了许多的奥秘（详细请见帮助）</li>
-        <li>在使用异变后，有小概率（1/7）变为姚（详细请见帮助）</li>
-        <li>修复了在使用异变后，可能会变成原来的棋子的bug</li>
-        <li>修复了随机道具只会生成前两种道具的bug</li>
-        <li>新道具：骨头，使棋子获得+3攻击力</li>
+        <li style="color:blue">已知bug（已部分解决）：有多个奥秘一次触发是只会弹出一个提示框（不影响实际游戏）。</li>
+        <li>添加了许多的奥秘。（详细请见帮助）</li>
+        <li>在使用异变后，有小概率（1/7）变为姚。（详细请见帮助）</li>
+        <li>修复了在使用异变后，可能会变成原来的棋子的bug。</li>
+        <li>修复了随机道具只会生成前两种道具的bug。</li>
+        <li>新道具：骨头，使棋子获得+3攻击力。</li>
         <li>调整了球的技能。</li>
         <li>调整了球的生命值：6 -> 5。</li>
         <li>调整了一些游戏描述与帮助。</li>
