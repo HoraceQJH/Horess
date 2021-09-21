@@ -89,12 +89,10 @@ var board = [[-1, -1, -1, -1, -1, -1, -1, -1], [-1, -1, -1, -1, -1, -1, -1, -1],
 [-1, -1, -1, -1, -1, -1, -1, -1], [-1, -1, -1, -1, -1, -1, -1, -1],
 [-1, -1, -1, -1, -1, -1, -1, -1], [-1, -1, -1, -1, -1, -1, -1, -1]];
 //board格式: [0 team, 1 level, 2 effect[0 shield], 3 blood, 4 speed, 5 attack, 6 reallevel]
-var isDead = [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]];
-var nam = ["炮", "炮", "马", "马", "球", "球", "猴", "猴", "姚"]; //每个棋子的名称
-var blood = [2, 2, 3, 3, 5, 5, 1, 1, 3]; //每个棋子的初始血量
-var attack = [4, 4, 2, 2, 1, 1, 3, 3, 3]; //每个棋子的初始攻击力
-var speed = [1, 1, 1, 1, 1, 1, 2, 2, 1]; //每个棋子的初始速度
-var initPos = [[0, 1], [0, 6], [0, 2], [0, 5], [0, 3], [0, 4], [0, 0], [0, 7], /*姚*/[-1, -1]]; //每个旗子所对应的初始坐标
+var nam = ["炮", "炮", "马", "马", "球", "球", "猴", "猴", "姚", "贾"]; //每个棋子的名称
+var blood = [2, 2, 2, 2, 3, 3, 1, 1, 3, 3]; //每个棋子的初始血量
+var attack = [4, 4, 3, 3, 2, 2, 3, 3, 3, 3]; //每个棋子的初始攻击力
+var speed = [1, 1, 1, 1, 1, 1, 2, 2, 1, 1]; //每个棋子的初始速度
 var player = 0; //目前操作的玩家：0红 1蓝
 var going = 0; //用来判断在不在control状态下的变量
 var turn = 0; //已经走过的回合数
@@ -109,22 +107,19 @@ var secretText =
   , "(奥秘)蕉猾诡计：下个被获得的道具将变为香蕉"
   , "(奥秘)偷天换日：当一个随从被攻击时，将其异变"
   , "(奥秘)抄袭：当一个道具被获得后，使另一方的一个随机棋子也获得此道具"
-  , "(奥秘)冰冻陷阱：当一个随从攻击时，阻止这次攻击"
+  , "(奥秘)救赎：当一个随从死亡时，将其复活并保留1点生命值"
   , "(奥秘)爆炸陷阱：当一个随从攻击时，对所有同方其他棋子造成1点伤害"];
-var modelPieceId = [[0, 2, 4, 6, 8], [0, 2, 4, 6, 8]];
+var modelPieceId = [[0, 2, 4, 6, 8, 9], [0, 2, 4, 6, 8, 9]];
 var nowSecret = [0, 0, 0, 0, 0, 0, 0, 0];
 var numSecret = 0;
 var money = [25, 25];
-var costMoney = [2, 2, 4, 4, 3, 3, 3, 3, 6];
-
+var costMoney = [2, 2, 4, 4, 3, 3, 3, 3, 6, 5];
 
 function jason()
 {
   var easterEgg = "Jason jason a jason!";
   return easterEgg;
 }
-
-
 
 function inProducer(x, y) //在道具生产者之内
 {
@@ -223,16 +218,14 @@ function selectPiece(x, y, id)
     {
       document.body.innerHTML += `<div class="piece teamii" id="piece${String(id + 16)}" style
       ="${pos(x, y)}" onclick="control(${x}, ${y})"><span>${nam[id]}</span></div>`;
-      let haveShield = (id == 4 || id == 5)? 1 : 0;
-      board[x][y] = [1, id, [haveShield], blood[id], speed[id], attack[id], id];
+      board[x][y] = [1, id, [0, 0], blood[id], speed[id], attack[id], id];
       money[1] -= costMoney[id];
     }
     else
     {
       document.body.innerHTML += `<div class="piece teami" id="piece${String(id)}" style
       ="${pos(x, y)}" onclick="control(${x}, ${y})"><span>${nam[id]}</span></div>`;
-      let haveShield = (id == 4 || id == 5)? 1 : 0;
-      board[x][y] = [0, id, [haveShield], blood[id], speed[id], attack[id], id];
+      board[x][y] = [0, id, [0, 0], blood[id], speed[id], attack[id], id];
       money[0] -= costMoney[id];
     }
 
@@ -250,6 +243,7 @@ function setBlock(x, y)
     ele.innerHTML += `<div class="piece modelInstr" onclick="selectPiece(${x},${y},${modelPieceId[findTeam(x, y)][2]})">球</div>`;
     ele.innerHTML += `<div class="piece modelInstr" onclick="selectPiece(${x},${y},${modelPieceId[findTeam(x, y)][3]})">猴</div>`;
     ele.innerHTML += `<div class="piece modelInstr" onclick="selectPiece(${x},${y},${modelPieceId[findTeam(x, y)][4]})">姚</div>`;
+    //ele.innerHTML += `<div class="piece modelInstr" onclick="selectPiece(${x},${y},${modelPieceId[findTeam(x, y)][5]})">贾</div>`;
   });
 }
 function showInformation(x, y)
@@ -301,16 +295,18 @@ function control(x, y)
   }
   function bfs(levelnum) //广度优先遍历可以走到的格子
   {
-    if(levelnum == 0 || levelnum == 1) //对于不同的棋子有不同的移动规则
+    //对于不同的棋子有不同的移动规则
+    if(levelnum == 0 || levelnum == 1) //炮
       var dx = [-1, 0, 1, 0], dy = [0, -1, 0, 1];
-    else if(levelnum == 2 || levelnum == 3)
+    else if(levelnum == 2 || levelnum == 3) //马
       var dx = [1, -1, 1, -1, 2, -2, 2, -2], dy = [2, 2, -2, -2, 1, 1, -1, -1];
-    else if(levelnum == 4 || levelnum == 5)
+    else if(levelnum == 4 || levelnum == 5) //猴
       var dx = [-1, 0, 1, 0], dy = [0, -1, 0, 1];
-    else if(levelnum == 6 || levelnum == 7)
+    else if(levelnum == 6 || levelnum == 7) //球
       var dx = [-1, 0, 1, 0], dy = [0, -1, 0, 1];
-    else if(levelnum == 8)
+    else if(levelnum == 8) //姚
       var dx = [-1, -1, 1, 1], dy = [-1, 1, -1, 1];
+
     var res = []; //计算棋子可以走的位置，并把结果储存在res中
     var isvisited = [[],[],[],[],[],[],[],[]]; //记忆化搜索，解决绿格子重复与效率低的问题
     for(let i = 0; i < 8 ; i ++) //记忆化数组初始定义为全0(false)
@@ -321,6 +317,7 @@ function control(x, y)
     qx.enqueue(x);
     qy.enqueue(y);
     qstep.enqueue(0);
+
     if(levelnum == 0 || levelnum == 1) //炮的特殊计算
     {
       var tx, ty;
@@ -348,6 +345,33 @@ function control(x, y)
         }
       }
     }
+    if(levelnum == 4 || levelnum == 5) //球的特殊计算
+    {
+      var tx, ty;
+      for(let i = 0; i < 4; i ++)
+      {
+        tx = x, ty = y;
+        var flag = 0;
+        while(inBoard(tx, ty))
+        {
+          tx += dx[i];
+          ty += dy[i];
+
+          //注：若两条件用或连接，则board未定义报错，不可修改
+          if(!inBoard(tx, ty)) //在棋盘外
+            flag = 1;
+          else if(board[tx][ty] != -1) //或格子不为空
+            flag = 1;
+
+          if(flag == 1)
+          {
+            res.push([tx - dx[i], ty - dy[i]]); //把上次循环中的值传出
+            break;
+          }
+        }
+      }
+    }
+
     while(!qx.isEmpty()) // 宽搜找路径
     {
       let xx = qx.peek(), yy = qy.peek(), ss= qstep.peek(); //取队首元素
@@ -509,15 +533,7 @@ function updatePropProducer() //更新道具生产者
 }
 function findDead(selectedPlayer)
 {
-  var flag = 1;
-  for(let i = 0; i < 8; i ++)
-    if(isDead[selectedPlayer][i] == 0)
-    {
-      flag = 0;
-      break;
-    }
-  if(flag == 1)
-    cAlert((selectedPlayer == 0)? "<h2>Blue Wins!</h2>" : "<h2>Red Wins!</h2>");
+  jason();
 }
 // Just to move a piece without considering anything else
 function movePiece(x, y, nx, ny) 
@@ -657,14 +673,6 @@ function go(x, y, nx, ny) //从(x, y)移动到(nx, ny), 只关心结果
   }
   else // 攻击另一个棋子
   { 
-    if (nowSecret[6] == 1) //(奥秘)冰冻陷阱：当一个随从攻击时，阻止这次攻击
-    {
-      showSecret(6);
-      nowSecret[6] = 0;
-      numSecret -= 1;
-      updateSecret();
-      return;
-    }
     if (nowSecret[0] == 1) //(奥秘)公正审判：当一个棋子攻击时，将其攻击力和生命值变为1
     {
       showSecret(0);
@@ -696,7 +704,8 @@ function go(x, y, nx, ny) //从(x, y)移动到(nx, ny), 只关心结果
       numSecret -= 1;
       updateSecret();
     }
-    var flagSecret1 = 0;
+    var flagSecret1 = 0; //用来处理清算消灭的棋子移动
+    var flagSecret2 = 0; //用来处理救赎复活的棋子移动
 
     if (nowSecret[7] == 1) //(奥秘)爆炸陷阱：当一个随从攻击时，对所有同方其他棋子造成1点伤害
     {
@@ -711,7 +720,6 @@ function go(x, y, nx, ny) //从(x, y)移动到(nx, ny), 只关心结果
         {
           killPiece(rx, ry);
           board[rx][ry] = -1;
-          isDead[brxy[0]][brxy[6]] = 1;
         }
       }
       nowSecret[7] = 0;
@@ -727,7 +735,7 @@ function go(x, y, nx, ny) //从(x, y)移动到(nx, ny), 只关心结果
         showSecret(1);
         killPiece(x, y);
         board[x][y] = -1;
-        flagSecret1 = 1;
+        flagSecret1 = 1; //将清算的flag设为1
         nowSecret[1] = 0;
         numSecret -= 1;
         updateSecret();
@@ -735,18 +743,34 @@ function go(x, y, nx, ny) //从(x, y)移动到(nx, ny), 只关心结果
     }
     else
       board[nx][ny][2][0] = 0;
+
     nbxy = board[nx][ny];
     bxy = board[x][y];
     if (nbxy[3] <= 0)  // 击杀
     {
-      killPiece(nx, ny);
-      if(flagSecret1 == 0) //当清算消灭了棋子后，不要再移动
+      if (nowSecret[6] == 1) //(奥秘)救赎：当一个随从死亡时，将其复活并保留1点生命值
+      {
+        showSecret(6);
+        board[nx][ny][3] = 1;
+        flagSecret2 = 1; //将救赎的flag设为1
+        nowSecret[6] = 0;
+        numSecret -= 1;
+        updateSecret();
+      }
+      else
+        killPiece(nx, ny);
+
+      if(flagSecret1 == 0 && flagSecret2 == 0) //当清算未消灭棋子且救赎未复活棋子时再移动
         movePiece(x, y, nx, ny);
-      board[x][y] = -1;
-      board[nx][ny] = bxy;
-      isDead[nbxy[0]][nbxy[6]] = 1;
+      if(flagSecret2 == 0) //当救赎未复活棋子时修改board
+      {
+        board[x][y] = -1;
+        board[nx][ny] = bxy;
+      }
+
       if(flagSecret1 == 0)
         document.getElementById(`piece${findPiece(nx, ny)}`).style.onclick = `control(${nx},${ny})`;
+
       if (nowSecret[2] == 1) //(奥秘)复仇：当一个棋子死亡后，随机使另一个同方棋子获得+3/+2
       {
         showSecret(2);
@@ -759,6 +783,7 @@ function go(x, y, nx, ny) //从(x, y)移动到(nx, ny), 只关心结果
         numSecret -= 1;
         updateSecret();
       }
+      
     }
   }
   // 处理道具生成
